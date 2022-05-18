@@ -66,23 +66,25 @@ void updateScanCode(unsigned long code) {
     display.display();
   }
 }
-void onInvalidIRCode(unsigned long code) {
-  USE_SERIAL.println("BAD CODE");
+void onInvalidIRSignal(unsigned long signal) {
+  USE_SERIAL.println("BAD IR SIGNAL");
+  USE_SERIAL.println(signal, HEX);
 }
 
-const unsigned long bad_code_mask = 0x000000FF;
+const unsigned long bad_signal_mask = 0x000000FF;
+const unsigned long short_signal_mask = 0xFFF00000;
 void scanIR() {
   if (IrReceiver.decode()) {
-    unsigned long ir_value = IrReceiver.decodedIRData.decodedRawData;
-    if (ir_value != 0) {
+    unsigned long ir_signal = IrReceiver.decodedIRData.decodedRawData;
+    if (ir_signal != 0) {
       // fix invalid codes 
-      if (ir_value & bad_code_mask) onInvalidIRCode(ir_value);
+      if (ir_signal & bad_signal_mask && ir_signal & short_signal_mask) onInvalidIRSignal(ir_signal);
       else {
-        setOutCode(ir_value);
-        last_code = ir_value;
+        setOutCode(ir_signal);
+        last_code = ir_signal;
         sensor_read_success = 1;
-        updateScanCode(ir_value);
-      //USE_SERIAL.println(ir_value, HEX);
+        updateScanCode(ir_signal);
+      //USE_SERIAL.println(ir_signal, HEX);
       }
       
     }
@@ -115,8 +117,8 @@ void sendData() {
 }
 
 void setup() {
-    pinMode(oled_power_pin, OUTPUT);
-    digitalWrite(oled_power_pin, HIGH);
+    //pinMode(oled_power_pin, OUTPUT);
+    //digitalWrite(oled_power_pin, HIGH);
     USE_SERIAL.begin(115200);
     if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
       Serial.println(F("SSD1306 allocation failed"));

@@ -8,7 +8,7 @@
 
 #define USE_SERIAL Serial
 
-enum DisplayMode { IR_DISPLAY, WIFI_DISPLAY };
+enum DisplayMode { IR_DISPLAY, WIFI_DISPLAY, NO_DISPLAY };
 DisplayMode display_mode = IR_DISPLAY;
 
 int sensor_read_success = 0;
@@ -40,10 +40,16 @@ void displayIRInfo() {
   oled_show();
 }
 
+void displayNoDisplay() {
+  oled_clear();
+  oled_show();
+}
+
 void setDisplayMode(DisplayMode dm) {
   display_mode = dm;
   if (display_mode == IR_DISPLAY) displayIRInfo();
   else if (display_mode == WIFI_DISPLAY) displayWiFiInfo();
+  else if (display_mode == NO_DISPLAY) displayNoDisplay();
 }
 
 void updateIRDisplay(unsigned int code) {
@@ -71,7 +77,9 @@ void onInvalidIRSignal(unsigned int signal) {
 void button_1(int state) {
   if (state) setDisplayMode(WIFI_DISPLAY);
 }
-void button_2(int state) {}
+void button_2(int state) {
+  if (state) setDisplayMode(NO_DISPLAY);
+}
 void button_3(int state) {
   if (state) setDisplayMode(IR_DISPLAY);
 }

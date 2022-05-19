@@ -4,7 +4,7 @@
 
 #include "ir.hpp"
 
-const int ir_receive_pin = 25;
+const int ir_receive_pin = 27;
 
 void (*valid_signal_callback) (unsigned int signal);
 void (*invalid_signal_callback) (unsigned int signal);

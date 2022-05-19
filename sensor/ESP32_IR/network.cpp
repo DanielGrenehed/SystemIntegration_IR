@@ -23,12 +23,16 @@ void network_init() {
     Serial.println(WiFi.macAddress());
 }
 
+char t_ssid[32];
 const char* network_ssid() {
-    return WiFi.SSID().c_str();
+    strcpy(t_ssid, WiFi.SSID().c_str()); 
+    return t_ssid;
 }
 
+char t_ip[16];
 const char* network_ip() {
-    return WiFi.localIP().toString().c_str();
+    strcpy(t_ip, WiFi.localIP().toString().c_str());
+    return t_ip;
 }
 
 const char* network_mac() {

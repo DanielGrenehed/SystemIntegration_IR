@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "network.hpp"
+#include "buttons.hpp"
 #include "oled.hpp"
 #include "util.hpp"
 #include "ir.hpp"
@@ -24,7 +25,7 @@ void displayWiFiInfo() {
   oled_set_text(network_ssid());
   oled_add_text(10, 1, "IP: ");
   oled_set_text(network_ip());
-  oled_add_text(20, 1, "MAC:");
+  oled_add_text(20, 1, "MAC ");
   oled_set_text(network_mac());
   oled_show();
 }
@@ -67,10 +68,22 @@ void onInvalidIRSignal(unsigned int signal) {
   }
 }
 
+void button_1(int state) {
+  if (state) setDisplayMode(WIFI_DISPLAY);
+}
+void button_2(int state) {}
+void button_3(int state) {
+  if (state) setDisplayMode(IR_DISPLAY);
+}
+
 void setup() {
   USE_SERIAL.begin(115200);
   oled_init();
   network_init();
+  button_init();
+  button_set_callback(0, button_1);
+  button_set_callback(1, button_2);
+  button_set_callback(2, button_3);
 
   json_set_token(network_mac());
   ir_init(setSensorOutput, onInvalidIRSignal);
@@ -96,5 +109,6 @@ void loop() {
     USE_SERIAL.println(F("No WiFi"));
     network_reconnect();
   }
+  button_process_input();
   delay(2);
 }

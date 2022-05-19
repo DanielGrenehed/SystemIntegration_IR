@@ -28,18 +28,21 @@ const int ir_receive_pin = 25;
 int sensor_read_success = 0;
 int debug_serial = 0;
 
+#define TOKEN_LENGTH 17
+#define CODE_LENGTH 8
+
 char JSONoutput[48] = "{\"token\":\"00:00:00:00:00:00\",\"code\":\"00000000\"}";
 
 void setToken(const char* token) {
   int t_start = 10;
-  for (int i = 0; i < 17; i++) {
+  for (int i = 0; i < TOKEN_LENGTH; i++) {
     JSONoutput[t_start+i] = token[i];
   }
 }
 
 void setCode(char* code) {
   int c_start = 37;
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < CODE_LENGTH; i++) {
     JSONoutput[c_start + i] = code[i];
   }
 }

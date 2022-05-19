@@ -13,6 +13,10 @@ DisplayMode display_mode = IR_DISPLAY;
 int sensor_read_success = 0;
 int debug_serial = 0;
 
+unsigned int last_valid_signal = 0;
+const char* ir_display_header = "IR code:";
+const char* url = "http://<hostname>:<port>/ir";
+const char* content_type = "application/json";
 
 void displayWiFiInfo() {
   oled_clear();
@@ -25,15 +29,12 @@ void displayWiFiInfo() {
   oled_show();
 }
 
-const char* screen_header = "IR code:";
-unsigned int scan_code = 0;
-
 void displayIRInfo() {
   oled_clear();
-  oled_add_text(0, 1, screen_header);
+  oled_add_text(0, 1, ir_display_header);
   char hex[9];
   hex[8] = 0;
-  uint_to_hex(scan_code, hex);
+  uint_to_hex(last_valid_signal, hex);
   oled_add_text(18, 2, hex);
   oled_show();
 }
@@ -44,9 +45,9 @@ void setDisplayMode(DisplayMode dm) {
   else if (display_mode == WIFI_DISPLAY) displayWiFiInfo();
 }
 
-void updateScanCode(unsigned int code) {
-  if (code != scan_code) {
-    scan_code = code;
+void updateIRDisplay(unsigned int code) {
+  if (code != last_valid_signal) {
+    last_valid_signal = code;
     if (display_mode == IR_DISPLAY) displayIRInfo();
   }
 }
@@ -55,7 +56,7 @@ void setSensorOutput(unsigned int value) {
   char code[8];
   uint_to_hex(value, code);
   json_set_code(code);
-  updateScanCode(value);
+  updateIRDisplay(value);
   sensor_read_success = 1;
 }
 
@@ -63,18 +64,6 @@ void onInvalidIRSignal(unsigned int signal) {
   if (debug_serial) {
     USE_SERIAL.print(F("BAD IR SIGNAL "));
     USE_SERIAL.println(signal, HEX);
-  }
-}
-
-
-const char* url = "http://<hostname>:<port>/ir";
-const char* content_type = "application/json";
-
-void sendData() {
-  ir_scan();
-  if (sensor_read_success) {
-    network_post_data(url, json_get(), content_type);
-    sensor_read_success = 0; // clear flag, message sent
   }
 }
 
@@ -94,7 +83,13 @@ unsigned long update_time_millis = 100;
 void loop() {
   if (network_is_connected()) {
     if (millis() > last_time + update_time_millis) {
-      sendData();
+      
+      ir_scan();
+      if (sensor_read_success) {
+        network_post_data(url, json_get(), content_type);
+        sensor_read_success = 0; // clear flag, message sent
+      }
+
       last_time = millis();
     }
   } else {

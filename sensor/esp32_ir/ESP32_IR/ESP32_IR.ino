@@ -18,6 +18,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 const int ir_receive_pin = 25;
 int sensor_read_success = 0;
+int debug_serial = 0;
 
 #define WIFI_SSID ""
 #define WIFI_PASSWORD ""
@@ -60,25 +61,43 @@ void updateScanCode(unsigned long code) {
   if (code != scan_code) {
     scan_code = code;
     setScreenText(screen_header);
-    display.setCursor(0, 10);
+    display.setCursor(0, 18);
     display.setTextSize(2);
     display.println(String(scan_code, HEX));
     display.display();
   }
 }
 void onInvalidIRSignal(unsigned long signal) {
-  USE_SERIAL.println("BAD IR SIGNAL");
-  USE_SERIAL.println(signal, HEX);
+  if (debug_serial) {
+    USE_SERIAL.print("BAD IR SIGNAL ");
+    USE_SERIAL.println(signal, HEX);
+  }
 }
 
-const unsigned long bad_signal_mask = 0x000000FF;
-const unsigned long short_signal_mask = 0xFFF00000;
+unsigned long last_id = 0x00000000;
+const unsigned long signal_id_mask = 0x000000FF;
+
+int isValidSignal(unsigned long signal) {
+  if (!(signal & 0xFFF00000)) return 1; // short signal with no id
+  unsigned long id = signal & signal_id_mask;
+
+  if (id == last_id) { // not a reflection
+     last_id = id;
+     return 1;
+
+  } else {
+    last_id = id;
+    return 0;
+  }
+}
+
+
+
 void scanIR() {
   if (IrReceiver.decode()) {
     unsigned long ir_signal = IrReceiver.decodedIRData.decodedRawData;
     if (ir_signal != 0) {
-      // fix invalid codes 
-      if (ir_signal & bad_signal_mask && ir_signal & short_signal_mask) onInvalidIRSignal(ir_signal);
+      if (!isValidSignal(ir_signal)) onInvalidIRSignal(ir_signal);
       else {
         setOutCode(ir_signal);
         last_code = ir_signal;

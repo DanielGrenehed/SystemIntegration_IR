@@ -5,17 +5,9 @@
 #include <IRremoteInt.h>
 
 // I2C OLED
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include "oled.hpp"
 
 #define USE_SERIAL Serial
-#define I2C_SDA 21
-#define I2C_SCL 22
-
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 32
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 enum DisplayMode { IR_DISPLAY, WIFI_DISPLAY };
 DisplayMode display_mode = IR_DISPLAY;
@@ -43,57 +35,24 @@ void JSONSetCode(char* code) {
   }
 }
 
-void setScreenText(const char* text) {
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.println(text);
-  display.display();
-}
-
-void initDisplay() {
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
-    USE_SERIAL.println(F("SSD1306 allocation failed"));
-  } else {
-    display.setTextColor(WHITE);
-    const char* str = "ESP32_IR_OLED";
-    setScreenText(str);
-  }
-}
-
-
 
 void displayWiFiInfo() {
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.print("SSID: ");
-  display.println(network_ssid());
-  display.setCursor(0, 10);
-  display.print("IP: ");
-  display.println(network_ip());
-  display.setCursor(0, 20);
-  display.print("MAC:");
-  display.println(network_mac());
-  display.display();
+  oled_clear();
+  oled_text_size(1);
+  oled_set_cursor(0);
+  oled_set_text("SSID: ");
+  oled_set_text(network_ssid());
+  oled_set_cursor(10);
+  oled_set_text("IP: ");
+  oled_set_text(network_ip());
+  oled_set_cursor(20);
+  oled_set_text("MAC:");
+  oled_set_text(network_mac());
+  oled_show();
 }
 
 const char* screen_header = "IR code:";
 unsigned int scan_code = 0;
-
-void displayIRInfo() {
-    setScreenText(screen_header);
-    display.setCursor(0, 18);
-    display.setTextSize(2);
-    display.println(scan_code, HEX);
-    display.display();
-}
-
-void setDisplayMode(DisplayMode dm) {
-  display_mode = dm;
-  if (display_mode == IR_DISPLAY) displayIRInfo();
-  else if (display_mode == WIFI_DISPLAY) displayWiFiInfo();
-}
 
 char toHex(unsigned int nibble) {
   unsigned int part = nibble & 0xF;
@@ -104,6 +63,28 @@ char toHex(unsigned int nibble) {
 void uitoHex(unsigned int ui, char* ca) {
   for (int i = 0; i < 8; i++) ca[7u-i] = toHex(ui >> i*4);
 }
+
+void displayIRInfo() {
+  oled_clear();
+  oled_text_size(1);
+  oled_set_cursor(0);
+  oled_set_text(screen_header);
+  oled_set_cursor(18);
+  oled_text_size(2);
+  char hex[9];
+  hex[8] = 0;
+  uitoHex(scan_code, hex);
+  oled_set_text(hex);
+  oled_show();
+}
+
+void setDisplayMode(DisplayMode dm) {
+  display_mode = dm;
+  if (display_mode == IR_DISPLAY) displayIRInfo();
+  else if (display_mode == WIFI_DISPLAY) displayWiFiInfo();
+}
+
+
 
 void setSensorOutput(unsigned long value) {
   char code[8];
@@ -160,7 +141,6 @@ const char* content_type = "application/json";
 void sendData() {
   scanIR();
   if (sensor_read_success) {
-    
     network_post_data(url, json, content_type);
     sensor_read_success = 0; // clear flag, message sent
   }
@@ -168,7 +148,7 @@ void sendData() {
 
 void setup() {
   USE_SERIAL.begin(115200);
-  initDisplay();
+  oled_init();
   network_init();
 
   JSONSetToken(network_mac());

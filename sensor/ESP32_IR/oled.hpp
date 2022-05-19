@@ -10,8 +10,9 @@
 void oled_init();
 void oled_clear();
 void oled_text_size(int size);
-void oled_set_text(const char* text);
 void oled_set_cursor(int y);
+void oled_set_text(const char* text);
+void oled_add_text(int y, int size, const char* text);
 void oled_show();
 
 #endif /* ifndef OLED_HPP */

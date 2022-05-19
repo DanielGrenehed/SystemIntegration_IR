@@ -35,6 +35,12 @@ void oled_set_cursor(int y) {
     display.setCursor(0, y);
 }
 
+void oled_add_text(int y, int size, const char* text) {
+    oled_set_cursor(y);
+    oled_text_size(size);
+    oled_set_text(text);
+}
+
 void oled_show() {
     display.display();
 }

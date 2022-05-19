@@ -1,12 +1,5 @@
 #include <Arduino.h>
-#include <WiFi.h>
-
-#define WIFI_SSID ""
-#define WIFI_PASSWORD ""
-
-// Data posting
-#include <HTTPClient.h>
-
+#include "network.hpp"
 // IR Receiver
 #include <IRremote.h>
 #include <IRremoteInt.h>
@@ -24,6 +17,9 @@
 #define SCREEN_HEIGHT 32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
+enum DisplayMode { IR_DISPLAY, WIFI_DISPLAY };
+DisplayMode display_mode = IR_DISPLAY;
+
 const int ir_receive_pin = 25;
 int sensor_read_success = 0;
 int debug_serial = 0;
@@ -31,58 +27,20 @@ int debug_serial = 0;
 #define TOKEN_LENGTH 17
 #define CODE_LENGTH 8
 
-char JSONoutput[48] = "{\"token\":\"00:00:00:00:00:00\",\"code\":\"00000000\"}";
+char json[48] = "{\"token\":\"00:00:00:00:00:00\",\"code\":\"00000000\"}";
 
-void setToken(const char* token) {
+void JSONSetToken(const char* token) {
   int t_start = 10;
   for (int i = 0; i < TOKEN_LENGTH; i++) {
-    JSONoutput[t_start+i] = token[i];
+    json[t_start+i] = token[i];
   }
 }
 
-void setCode(char* code) {
+void JSONSetCode(char* code) {
   int c_start = 37;
   for (int i = 0; i < CODE_LENGTH; i++) {
-    JSONoutput[c_start + i] = code[i];
+    json[c_start + i] = code[i];
   }
-}
-
-void initWiFi() {
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  USE_SERIAL.println(F("Connecting to WiFi"));
-  while (WiFi.status() != WL_CONNECTED) {
-    USE_SERIAL.print('.');
-    delay(1000);
-  }
-  USE_SERIAL.println();
-  USE_SERIAL.print(F("SSID: "));
-  USE_SERIAL.println(WiFi.SSID());
-  USE_SERIAL.print(F("IP: "));
-  USE_SERIAL.println(WiFi.localIP());
-  USE_SERIAL.print(F("MAC: "));
-  USE_SERIAL.println(WiFi.macAddress());
-}
-
-char toHex(unsigned int nibble) {
-  unsigned int part = nibble & 0xF;
-  if (part < 10) {
-    return (char) part + 48; // (0 = 48)
-  } else {
-    return (char) part + 55; // (A = 65)
-  }
-}
-
-void uitoca(unsigned int ui, char* ca) {
-  for (int i = 0; i < 8; i++) {
-    ca[7u-i] = toHex(ui >> i*4);
-  }
-}
-
-void setOutCode(unsigned long value) {
-  char code[8];
-  uitoca(value, code);
-  setCode(code);
 }
 
 void setScreenText(const char* text) {
@@ -93,20 +51,73 @@ void setScreenText(const char* text) {
   display.display();
 }
 
+void initDisplay() {
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
+    USE_SERIAL.println(F("SSD1306 allocation failed"));
+  } else {
+    display.setTextColor(WHITE);
+    const char* str = "ESP32_IR_OLED";
+    setScreenText(str);
+  }
+}
+
+
+
+void displayWiFiInfo() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print("SSID: ");
+  display.println(network_ssid());
+  display.setCursor(0, 10);
+  display.print("IP: ");
+  display.println(network_ip());
+  display.setCursor(0, 20);
+  display.print("MAC:");
+  display.println(network_mac());
+  display.display();
+}
+
 const char* screen_header = "IR code:";
 unsigned int scan_code = 0;
 
-void updateScanCode(unsigned int code) {
-  if (code != scan_code) {
-    scan_code = code;
+void displayIRInfo() {
     setScreenText(screen_header);
     display.setCursor(0, 18);
     display.setTextSize(2);
     display.println(scan_code, HEX);
     display.display();
-  }
 }
 
+void setDisplayMode(DisplayMode dm) {
+  display_mode = dm;
+  if (display_mode == IR_DISPLAY) displayIRInfo();
+  else if (display_mode == WIFI_DISPLAY) displayWiFiInfo();
+}
+
+char toHex(unsigned int nibble) {
+  unsigned int part = nibble & 0xF;
+  if (part < 10) return (char) part + 48; // (0 = 48)
+  else return (char) part + 55; // (A = 65)
+}
+
+void uitoHex(unsigned int ui, char* ca) {
+  for (int i = 0; i < 8; i++) ca[7u-i] = toHex(ui >> i*4);
+}
+
+void setSensorOutput(unsigned long value) {
+  char code[8];
+  uitoHex(value, code);
+  JSONSetCode(code);
+  sensor_read_success = 1;
+}
+
+void updateScanCode(unsigned int code) {
+  if (code != scan_code) {
+    scan_code = code;
+    if (display_mode == IR_DISPLAY) displayIRInfo();
+  }
+}
 
 void onInvalidIRSignal(unsigned int signal) {
   if (debug_serial) {
@@ -121,15 +132,10 @@ const unsigned int signal_id_mask = 0x000000FF;
 int isValidSignal(unsigned int signal) {
   if (!(signal & 0xFFF00000)) return 1; // short signal with no id
   unsigned int id = signal & signal_id_mask;
-
-  if (id == last_id) { // not a reflection
-    last_id = id;
-    return 1;
-
-  } else {
-    last_id = id;
-    return 0;
-  }
+  int result = 0;
+  if (id == last_id) result = 1; 
+  last_id = id;
+  return result;
 }
 
 void scanIR() {
@@ -140,8 +146,7 @@ void scanIR() {
     if (ir_signal != 0) {
       if (!isValidSignal(ir_signal)) onInvalidIRSignal(ir_signal);
       else {
-        setOutCode(ir_signal);
-        sensor_read_success = 1;
+        setSensorOutput(ir_signal);
         updateScanCode(ir_signal);
       }
     }
@@ -150,60 +155,39 @@ void scanIR() {
 }
 
 const char* url = "http://<hostname>:<port>/ir";
+const char* content_type = "application/json";
 
 void sendData() {
   scanIR();
   if (sensor_read_success) {
-    HTTPClient http;
-
-    http.begin(url); //HTTP
-    http.addHeader(F("Content-Type"), F("application/json"));
-    USE_SERIAL.print(F("[HTTP] POST..."));
-    USE_SERIAL.printf(JSONoutput);
-    int httpCode = http.POST(JSONoutput);
-    if (httpCode > 0) {
-      USE_SERIAL.printf("[HTTP] POST... code: %d\n", httpCode);
-      if (httpCode == HTTP_CODE_OK) USE_SERIAL.println(http.getString());
-    } else {
-      USE_SERIAL.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
-    }
-
-    http.end();
+    
+    network_post_data(url, json, content_type);
     sensor_read_success = 0; // clear flag, message sent
   }
 }
 
 void setup() {
   USE_SERIAL.begin(115200);
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
-    Serial.println(F("SSD1306 allocation failed"));
-  } else {
-    display.setTextColor(WHITE);
-    const char* str = "ESP32_IR_OLED";
-    setScreenText(str);
-  }
+  initDisplay();
+  network_init();
 
-  initWiFi();
-  setToken(WiFi.macAddress().c_str());
+  JSONSetToken(network_mac());
   IrReceiver.begin(ir_receive_pin);
-
+  //setDisplayMode(WIFI_DISPLAY);
 }
 
 unsigned long last_time = millis();
 unsigned long update_time_millis = 100;
 
 void loop() {
-  if (WiFi.status() == WL_CONNECTED) {
+  if (network_is_connected()) {
     if (millis() > last_time + update_time_millis) {
       sendData();
       last_time = millis();
     }
-
   } else {
     USE_SERIAL.println(F("No WiFi"));
-    WiFi.disconnect();
-    WiFi.reconnect();
+    network_reconnect();
   }
-
-  delay(10);
+  delay(2);
 }

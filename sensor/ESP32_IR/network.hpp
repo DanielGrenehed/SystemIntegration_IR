@@ -1,8 +1,8 @@
 #ifndef NETWORK_HPP
 #define NETWORK_HPP
 
-#define WIFI_SSID ""
-#define WIFI_PASSWORD ""
+#define WIFI_SSID "TP-LINK_4449"
+#define WIFI_PASSWORD "Pl1sJustWORk45"
 
 void network_init();
 

@@ -7,8 +7,8 @@ var table = new Tabulator("#example-table", {
     paginationSizeSelector:[5, 10, 20, 50],
     paginationCounter:"rows",
     columns:[
-        {title:"Data", field:"data"},
-        {title:"SensorId", field:"sensorId"},
+        {title:"Code", field:"code"},
+        {title:"Token", field:"token"},
         {title:"Timestamp", field:"timestamp"},
     ],
 });

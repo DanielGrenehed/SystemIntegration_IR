@@ -43,7 +43,7 @@ public class SensorDAO {
 		return (Sensor) result.get();
 	}
 
-	public List<Sensor> getSensors(int sensor_id) throws SQLException {
+	public List<Sensor> getSensors() throws SQLException {
 		PreparedStatement statement = dbao.prepareStatement("SELECT * FROM sensor;");
 		List<Sensor> result = new ArrayList<>();
 		dbao.Query(statement, set -> { while(set.next()) result.add(getSensorFromSet(set)); });

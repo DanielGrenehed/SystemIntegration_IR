@@ -3,10 +3,13 @@ package server.sensor;
 import server.database.DatabaseAccessObject;
 import server.database.Promise;
 import server.database.SharedDBAO;
+import server.ir_signal.IRSignal;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SensorDAO {
 
@@ -38,5 +41,12 @@ public class SensorDAO {
 			while (set.next()) result.set(getSensorFromSet(set));
 		});
 		return (Sensor) result.get();
+	}
+
+	public List<Sensor> getSensors(int sensor_id) throws SQLException {
+		PreparedStatement statement = dbao.prepareStatement("SELECT * FROM sensor;");
+		List<Sensor> result = new ArrayList<>();
+		dbao.Query(statement, set -> { while(set.next()) result.add(getSensorFromSet(set)); });
+		return result;
 	}
 }

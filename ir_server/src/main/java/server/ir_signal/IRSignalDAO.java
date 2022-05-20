@@ -38,10 +38,18 @@ public class IRSignalDAO {
 		statement.setTimestamp(3, (Timestamp) insert.getTime());
 		Promise result = new Promise();
 		dbao.QueryUpdate(statement, ((affected, set) -> {
-			if (affected > 0)
-			while (set.next()) result.set(getIRSignalFromSet(set));
+			if (affected > 0) while (set.next()) result.set(getIRSignalFromSet(set));
 		}));
 		return (IRSignal) result.get();
 	}
 
+	public IRSignal getLatestSignalFromSensor(int sensor_id) throws SQLException {
+		PreparedStatement statement = dbao.prepareStatement("SELECT * FROM sensor_data WHERE sensor_id=? ORDER BY sensor_data_date DESC;");
+		statement.setInt(1, sensor_id);
+		Promise result = new Promise();
+		dbao.Query(statement, set -> {
+			while (set.next()) result.set(getIRSignalFromSet(set));
+		});
+		return (IRSignal) result.get();
+	}
 }

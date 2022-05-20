@@ -49,4 +49,19 @@ public class SensorDAO {
 		dbao.Query(statement, set -> { while(set.next()) result.add(getSensorFromSet(set)); });
 		return result;
 	}
+
+	public List<Sensor> getSensorsWithType(String type) {
+		List<Sensor> result = new ArrayList<>();
+		try {
+			PreparedStatement statement = dbao.prepareStatement("SELECT * FROM sensor WHERE sensor_type LIKE ?;");
+			statement.setString(1,"%"+type+"%");
+			dbao.Query(statement, set -> {
+				while (set.next()) result.add(getSensorFromSet(set));
+			});
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return result;
+	}
 }

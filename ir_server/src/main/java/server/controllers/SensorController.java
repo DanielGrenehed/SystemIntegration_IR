@@ -31,4 +31,8 @@ public class SensorController {
 		return dao.getSensors();
 	}
 
+	@GetMapping("/type/{type}")
+	public List<Sensor> getSensorOfType(@PathVariable String type) {
+		return dao.getSensorsWithType(type);
+	}
 }

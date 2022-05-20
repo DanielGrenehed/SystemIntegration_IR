@@ -23,7 +23,7 @@ public class IRSignalDAO {
 	}
 
 	public List<IRSignal> getSignalsFromSensor(int sensor_id) throws SQLException {
-		PreparedStatement statement = dbao.prepareStatement("SELECT * FROM sensor_data WHERE sensor_id=?;");
+		PreparedStatement statement = dbao.prepareStatement("SELECT * FROM sensor_data WHERE sensor_id=? ORDER BY sensor_data_date DESC;");
 		statement.setInt(1, sensor_id);
 		List<IRSignal> result = new ArrayList<>();
 		dbao.Query(statement, set -> { while(set.next()) result.add(getIRSignalFromSet(set)); });

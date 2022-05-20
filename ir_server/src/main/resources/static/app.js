@@ -33,5 +33,5 @@ ws.onmessage = function(event) {
 
 ws.onopen = function (){
     console.log("connected")
-    ws.send(JSON.stringify({sensorId:5}));
+    ws.send(JSON.stringify({sensor_id:5}));
 }

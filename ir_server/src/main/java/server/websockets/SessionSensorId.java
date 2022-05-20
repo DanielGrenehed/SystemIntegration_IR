@@ -1,13 +1,13 @@
 package server.websockets;
 
 public class SessionSensorId {
-    private int sensorId;
+    private int sensor_id;
 
-    public int getSensorId() {
-        return sensorId;
+    public int getSensor_id() {
+        return sensor_id;
     }
 
-    public void setSensorId(int sensorId) {
-        this.sensorId = sensorId;
+    public void setSensor_id(int sensor_id) {
+        this.sensor_id = sensor_id;
     }
 }

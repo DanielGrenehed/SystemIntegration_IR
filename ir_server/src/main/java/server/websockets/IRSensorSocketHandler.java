@@ -50,7 +50,7 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
     public static void sendBySensorID(IRSignal signal) throws IOException {
         TextMessage message = new TextMessage(new Gson().toJson(signal));
         for(Map.Entry<WebSocketSession, SessionSensorId> entry : sessionMap.entrySet()){
-            if(entry.getValue().getSensorId() == signal.getSensor_id()){
+            if(entry.getValue().getSensor_id() == signal.getSensor_id()){
                 entry.getKey().sendMessage(message);
             }
         }

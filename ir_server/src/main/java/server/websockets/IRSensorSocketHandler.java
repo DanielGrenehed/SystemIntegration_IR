@@ -8,6 +8,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -16,6 +17,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class IRSensorSocketHandler extends TextWebSocketHandler {
 
     static List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
+    static Map<WebSocketSession, SessionSensorId> sessionMap = new HashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -33,6 +35,9 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message)
             throws InterruptedException, IOException {
             //messages from websocket
+            SessionSensorId sensorId = new Gson().fromJson(message.getPayload(), SessionSensorId.class);
+            sessionMap.put(session, sensorId);
+
     }
 
     public static void broadcastTextMessage(TextMessage message) throws IOException {
@@ -40,5 +45,16 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
             webSocketSession.sendMessage(message);
         }
     }
+
+    public static void sendBySensorID(TextMessage message, int id) throws IOException {
+
+        for(Map.Entry<WebSocketSession, SessionSensorId> entry : sessionMap.entrySet()){
+            if(entry.getValue().getSensorId() == id){
+                entry.getKey().sendMessage(message);
+            }
+        }
+    }
+
+
 
 }

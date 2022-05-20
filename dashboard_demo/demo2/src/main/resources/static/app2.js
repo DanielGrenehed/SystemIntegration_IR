@@ -1,7 +1,6 @@
 
 var table = new Tabulator("#example-table", {
     layout:"fitColumns",
-    responsiveLayout:"hide",
     pagination:"local",
     paginationSize:5,
     paginationSizeSelector:[5, 10, 20, 50],
@@ -19,7 +18,12 @@ ws.onmessage = function(event) {
 
     let reading = JSON.parse(event.data);
     console.log(reading);
-    table.addData([reading], true);
+    if(reading.constructor === Array) {
+        reading.forEach(irData => table.addData([irData], true));
+    } else{
+        table.addData([reading], true);
+    }
+
 
 
 }

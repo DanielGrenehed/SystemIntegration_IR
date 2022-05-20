@@ -1,11 +1,13 @@
 package server.ir_signal;
 
 import server.database.DatabaseAccessObject;
+import server.database.Promise;
 import server.database.SharedDBAO;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,5 +31,17 @@ public class IRSignalDAO {
 		return result;
 	}
 
+	public IRSignal insertSignal(IRSignalInsert insert) throws SQLException {
+		PreparedStatement statement = dbao.prepareUpdateStatement("INSERT INTO sensor_data (sensor_id, sensor_data_value, sensor_data_date) values ((SELECT sensor_id FROM sensor WHERE sensor_name=?), ?, ?);");
+		statement.setString(1, insert.getToken());
+		statement.setString(2, insert.getSignal());
+		statement.setTimestamp(3, (Timestamp) insert.getTime());
+		Promise result = new Promise();
+		dbao.QueryUpdate(statement, ((affected, set) -> {
+			if (affected > 0)
+			while (set.next()) result.set(getIRSignalFromSet(set));
+		}));
+		return (IRSignal) result.get();
+	}
 
 }

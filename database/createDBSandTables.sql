@@ -1,5 +1,7 @@
 -- create database
-SELECT * FROM demoiot2022.animals;CREATE DATABASE `sensor_dbs` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE `sensor_dbs` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+USE `sensor_dbs`;
 
 -- create sensor table
 CREATE TABLE `sensor` (
@@ -20,3 +22,6 @@ CREATE TABLE `sensor_data` (
   KEY `fk_sensor_data_sensor_idx` (`sensor_id`),
   CONSTRAINT `fk_sensor_data_sensor` FOREIGN KEY (`sensor_id`) REFERENCES `sensor` (`sensor_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3;
+
+CREATE USER 'ir_api_user' IDENTIFIED BY 'ir_api_user_password';
+GRANT INSERT, DELETE, EXECUTE, SELECT, UPDATE ON sensor_dbs.* TO 'ir_api_user';

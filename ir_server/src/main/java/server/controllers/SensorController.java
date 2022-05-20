@@ -26,9 +26,9 @@ public class SensorController {
 		return dao.getSensorByToken(token);
 	}
 
-	@GetMapping("s")
+	@GetMapping("/all")
 	public List<Sensor> getSensors() throws SQLException {
-		return null; // dao.getSensors();
+		return dao.getSensors();
 	}
 
 }

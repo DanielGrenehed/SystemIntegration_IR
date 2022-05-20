@@ -6,28 +6,32 @@ var table = new Tabulator("#data-table", {
     paginationSizeSelector:[5, 10, 20, 50],
     paginationCounter:"rows",
     columns:[
-        {title:"Code", field:"code"},
-        {title:"Token", field:"token"},
-        {title:"Timestamp", field:"timestamp"},
+        {title:"Code", field:"signal"},
+        {title:"Sensor ID", field:"sensor_id"},
+        {title:"Timestamp", field:"time"},
     ],
 });
 
-let ws = new WebSocket('ws://localhost:8080/sensor');
+let ws = new WebSocket('ws://localhost:8081/ir-sensor');
+
+function addDataToTable(data) {
+    table.addData([data], true);
+    table.redraw();
+}
 
 ws.onmessage = function(event) {
 
     let reading = JSON.parse(event.data);
     console.log(reading);
     if(reading.constructor === Array) {
-        reading.forEach(irData => table.addData([irData], true));
-    } else{
-        table.addData([reading], true);
+        reading.forEach(irData => addDataToTable(irData));
+    } else {
+        addDataToTable(reading);
     }
-
-
 
 }
 
 ws.onopen = function (){
     console.log("connected")
+    ws.send(JSON.stringify({sensorId:5}));
 }

@@ -6,6 +6,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import server.ir_signal.IRSignal;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session);
-
+        sessionMap.remove(session);
     }
 
     @Override
@@ -46,10 +47,10 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    public static void sendBySensorID(TextMessage message, int id) throws IOException {
-
+    public static void sendBySensorID(IRSignal signal) throws IOException {
+        TextMessage message = new TextMessage(new Gson().toJson(signal));
         for(Map.Entry<WebSocketSession, SessionSensorId> entry : sessionMap.entrySet()){
-            if(entry.getValue().getSensorId() == id){
+            if(entry.getValue().getSensorId() == signal.getSensor_id()){
                 entry.getKey().sendMessage(message);
             }
         }

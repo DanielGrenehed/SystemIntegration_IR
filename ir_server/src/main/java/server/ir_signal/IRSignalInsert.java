@@ -3,17 +3,9 @@ package server.ir_signal;
 import java.util.Date;
 
 public class IRSignalInsert {
-	private String signal;
+	private String code;
 	private String token;
 	private Date time;
-
-	public String getSignal() {
-		return signal;
-	}
-
-	public void setSignal(String signal) {
-		this.signal = signal;
-	}
 
 	public String getToken() {
 		return token;
@@ -29,5 +21,13 @@ public class IRSignalInsert {
 
 	public void setTime(Date time) {
 		this.time = time;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 }

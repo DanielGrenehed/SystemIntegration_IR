@@ -1,12 +1,10 @@
 package server.controllers;
 
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import server.ir_signal.IRSignal;
 import server.ir_signal.IRSignalDAO;
+import server.ir_signal.IRSignalInsert;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -25,6 +23,11 @@ public class IRSignalController {
 	@GetMapping("/{id}/latest")
 	public IRSignal getLatestIRSignalFromSensor(@PathVariable int id) throws SQLException {
 		return dao.getLatestSignalFromSensor(id);
+	}
+
+	@PostMapping("")
+	public IRSignal postIRSignal(@RequestBody IRSignalInsert insert) throws SQLException {
+		return dao.insertSignal(insert);
 	}
 
 }

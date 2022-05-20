@@ -2,17 +2,10 @@ package server.ir_signal;
 
 import java.util.Date;
 
-public class IRSignal {
+public class IRSignalInsert {
 	private String signal;
-	private int sensor_id;
+	private String token;
 	private Date time;
-	public int getSensor_id() {
-		return sensor_id;
-	}
-
-	public void setSensor_id(int sensor_id) {
-		this.sensor_id = sensor_id;
-	}
 
 	public String getSignal() {
 		return signal;
@@ -20,6 +13,14 @@ public class IRSignal {
 
 	public void setSignal(String signal) {
 		this.signal = signal;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 	public Date getTime() {

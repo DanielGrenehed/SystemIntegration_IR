@@ -20,5 +20,12 @@ public class TestController {
         return sensorData;
     }
 
+    @PostMapping("/test2")
+    IRTestData testResponse(@RequestBody IRTestData sensorData) throws IOException {
+        if(sensorData.getTimestamp() == null) sensorData.setTimestamp(Timestamp.valueOf(LocalDateTime.now()));
+        SensorSocketHandler.broadcastTextMessage(new TextMessage(new Gson().toJson(sensorData)));
+        return sensorData;
+    }
+
 
 }

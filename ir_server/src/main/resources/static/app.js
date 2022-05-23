@@ -15,15 +15,24 @@ let table = new Tabulator("#data-table", {
 
 let ws = new WebSocket('ws://localhost:8081/ir-sensor');
 
+function dateFromTimestamp(time) {
+    const date = new Date(time);
+    return date.toLocaleString('en-GB', { timeZone: 'CET' });
+}
+
 function addListToTable(list) {
     for (let i = 0; i < list.length; i++) {
-        table.addData([list[i]], true)
+        let obj = list[i];
+        obj.time = dateFromTimestamp(obj.time);
+        table.addData([obj], false)
     }
     table.redraw();
 }
 
 function addDataToTable(data) {
-    table.addData([data], true);
+    let obj = data;
+    obj.time = dateFromTimestamp(data.time);
+    table.addData([obj], true);
     table.redraw();
 }
 
@@ -47,9 +56,4 @@ ws.onopen = function (){
 
 // load history
 url = '/IR/' + m_sensor_id + '/' + 30;
-console.log(url);
-fetch(url).then(res => res.json()).then((out) => {
-    console.log(out);
-    addListToTable(out);
-    // add to table
-});
+fetch(url).then(res => res.json()).then((out) => { addListToTable(out); });

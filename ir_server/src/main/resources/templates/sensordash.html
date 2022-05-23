@@ -17,10 +17,10 @@
         </tr>
     </thead>
     <tbody>
-        <tr th:each ="sensor : $sensor_list">
+        <tr th:each ="sensor : ${sensor_list}">
             <td th:text="${sensor.id}">
             <td th:text="${sensor.type}">
-            <td><a th:href="@('/dash/' + ${sensor.id})">View</a></td>
+            <td><a th:href="@{'/dash/' + ${sensor.id}}">View</a></td>
         </tr>
     </tbody>
 </table>

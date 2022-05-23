@@ -9,6 +9,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import server.ir_signal.IRSignal;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
             webSocketSession.sendMessage(message);
         }
     }
+
 
     public static void sendBySensorID(IRSignal signal) throws IOException {
         TextMessage message = new TextMessage(new Gson().toJson(signal));

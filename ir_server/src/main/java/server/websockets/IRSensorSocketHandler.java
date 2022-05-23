@@ -9,17 +9,16 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import server.ir_signal.IRSignal;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component
 public class IRSensorSocketHandler extends TextWebSocketHandler {
 
     static List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
-    static Map<WebSocketSession, SessionSensorId> sessionMap = new HashMap<>();
+    static Map<WebSocketSession, SessionSensorId> session_sid_map = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -30,7 +29,7 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session);
-        sessionMap.remove(session);
+        session_sid_map.remove(session);
         System.out.println("Session Closed");
     }
 
@@ -39,7 +38,7 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
             throws InterruptedException, IOException {
             //messages from websocket
             SessionSensorId sensorId = new Gson().fromJson(message.getPayload(), SessionSensorId.class);
-            sessionMap.put(session, sensorId);
+            session_sid_map.put(session, sensorId);
 
     }
 
@@ -52,9 +51,10 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
 
     public static void sendBySensorID(IRSignal signal) throws IOException {
         TextMessage message = new TextMessage(new Gson().toJson(signal));
-        for(Map.Entry<WebSocketSession, SessionSensorId> entry : sessionMap.entrySet()){
+        for(Map.Entry<WebSocketSession, SessionSensorId> entry : session_sid_map.entrySet()){
             if(entry.getValue().getSensor_id() == signal.getSensor_id()){
                 entry.getKey().sendMessage(message);
+                //System.out.println("Sending signal to websocket");
             }
         }
     }

@@ -3,6 +3,7 @@ package server.websockets;
 import server.ir_signal.IRSignal;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -20,6 +21,7 @@ public class IRSignalDispatcher implements Runnable {
 
 	public synchronized void enqueueSignal(IRSignal signal) {
 		signal_queue.add(signal);
+		//System.out.println("Signal enqueued");
 	}
 
 	public synchronized void stop() {
@@ -33,15 +35,23 @@ public class IRSignalDispatcher implements Runnable {
 	@Override
 	public void run() {
 		running = true;
+		System.out.println("Starting signal dispatcher");
 		while (running) {
 			while (!signal_queue.isEmpty()) {
 				IRSignal signal = signal_queue.poll();
 				try {
+					//System.out.println("Dispatching signal");
 					IRSensorSocketHandler.sendBySensorID(signal);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
 			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			//System.out.println("");
 		}
 
 	}

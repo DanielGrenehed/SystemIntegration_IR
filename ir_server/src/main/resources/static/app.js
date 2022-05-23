@@ -31,7 +31,12 @@ ws.onmessage = function(event) {
 
 }
 
+function get_sensor_id() {
+    const element = document.getElementById("sensor_id_div");
+    return element.getAttribute("sensor_id")
+}
+
 ws.onopen = function (){
     console.log("connected")
-    ws.send(JSON.stringify({sensor_id:5}));
+    ws.send(JSON.stringify({sensor_id:get_sensor_id()}));
 }

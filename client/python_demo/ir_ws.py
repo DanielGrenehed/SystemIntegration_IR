@@ -9,7 +9,7 @@ class IR_API_WS:
 
     def __init__(self, url, sensor_id):
         self.ws = create_connection(url)
-        self.ws.send(json.dumps({"sensor_id":5}))
+        self.ws.send(json.dumps({"sensor_id":sensor_id}))
 
     def run(self, signal_responder):
         while True:

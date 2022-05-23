@@ -30,6 +30,15 @@ public class IRSignalDAO {
 		return result;
 	}
 
+	public List<IRSignal> getSignalsFromSensor(int sensor_id, int limit) throws SQLException {
+		PreparedStatement statement = dbao.prepareStatement("SELECT * FROM sensor_data WHERE sensor_id=? ORDER BY sensor_data_date DESC LIMIT ?;");
+		statement.setInt(1, sensor_id);
+		statement.setInt(2, limit);
+		List<IRSignal> result = new ArrayList<>();
+		dbao.Query(statement, set -> { while(set.next()) result.add(getIRSignalFromSet(set)); });
+		return result;
+	}
+
 	public IRSignal getLatestSignalFromSensor(int sensor_id) throws SQLException {
 		PreparedStatement statement = dbao.prepareStatement("SELECT * FROM sensor_data WHERE sensor_id=? ORDER BY sensor_data_date DESC LIMIT 1;");
 		statement.setInt(1, sensor_id);
@@ -65,5 +74,6 @@ public class IRSignalDAO {
 		if (result.isSet()) IRSignalDispatcher.getInstance().enqueueSignal((IRSignal) result.get());
 		return (IRSignal) result.get();
 	}
+
 
 }

@@ -1,5 +1,6 @@
 
-var table = new Tabulator("#data-table", {
+const m_sensor_id = document.getElementById("sensor_id_div").getAttribute("sensor_id");
+let table = new Tabulator("#data-table", {
     layout:"fitColumns",
     pagination:"local",
     paginationSize:5,
@@ -13,6 +14,13 @@ var table = new Tabulator("#data-table", {
 });
 
 let ws = new WebSocket('ws://localhost:8081/ir-sensor');
+
+function addListToTable(list) {
+    for (let i = 0; i < list.length; i++) {
+        table.addData([list[i]], true)
+    }
+    table.redraw();
+}
 
 function addDataToTable(data) {
     table.addData([data], true);
@@ -31,12 +39,17 @@ ws.onmessage = function(event) {
 
 }
 
-function get_sensor_id() {
-    const element = document.getElementById("sensor_id_div");
-    return element.getAttribute("sensor_id")
-}
 
 ws.onopen = function (){
     console.log("connected")
-    ws.send(JSON.stringify({sensor_id:get_sensor_id()}));
+    ws.send(JSON.stringify({sensor_id:m_sensor_id}));
 }
+
+// load history
+url = '/IR/' + m_sensor_id + '/' + 30;
+console.log(url);
+fetch(url).then(res => res.json()).then((out) => {
+    console.log(out);
+    addListToTable(out);
+    // add to table
+});

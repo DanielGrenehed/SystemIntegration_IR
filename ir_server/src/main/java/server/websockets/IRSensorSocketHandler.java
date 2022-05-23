@@ -30,6 +30,7 @@ public class IRSensorSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session);
         sessionMap.remove(session);
+        System.out.println("Session Closed");
     }
 
     @Override

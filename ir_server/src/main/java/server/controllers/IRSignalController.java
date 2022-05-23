@@ -20,6 +20,11 @@ public class IRSignalController {
 		return dao.getSignalsFromSensor(id);
 	}
 
+	@GetMapping("/{id}/{limit}")
+	public List<IRSignal> getLimitedIRSignalHistoryForSensor(@PathVariable int id, @PathVariable int limit) throws SQLException {
+		return dao.getSignalsFromSensor(id, limit);
+	}
+
 	@GetMapping("/{id}/latest")
 	public IRSignal getLatestIRSignalFromSensor(@PathVariable int id) throws SQLException {
 		return dao.getLatestSignalFromSensor(id);

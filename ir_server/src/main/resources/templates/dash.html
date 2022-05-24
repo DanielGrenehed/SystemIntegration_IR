@@ -29,10 +29,10 @@
   }
 </style>
 <body class="bg-dark text-white">
-
+<h1 id="sensor_id_div" th:sensor_id="${sensor_id}" th:text="@{'Sensor ' + ${sensor_id} }"></h1>
 <div id="data-table" class="table-dark table-striped bg-dark"></div>
 
-<div id="sensor_id_div" th:sensor_id="${sensor_id}"></div>
+
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.2.4/dist/js/tabulator.min.js"></script>
 <script src="../app.js"></script>
 </body>

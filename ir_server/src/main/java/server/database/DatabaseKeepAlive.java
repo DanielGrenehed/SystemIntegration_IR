@@ -6,7 +6,7 @@ public class DatabaseKeepAlive implements Runnable {
 
 	private DatabaseAccessObject dbao = SharedDBAO.getInstance();
 
-	private static final long sleep_time_ms = 100 * 60 * 60; // sleep for one hour
+	private static final long sleep_time_ms = 1000 * 60 * 60; // sleep for one hour
 	private boolean running = false;
 
 	public void stopRunning() {

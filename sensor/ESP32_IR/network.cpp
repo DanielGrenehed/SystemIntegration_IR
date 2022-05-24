@@ -35,8 +35,10 @@ const char* network_ip() {
     return t_ip;
 }
 
+char t_mac[18];
 const char* network_mac() {
-    return WiFi.macAddress().c_str();
+    strcpy(t_mac, WiFi.macAddress().c_str());
+    return t_mac;
 }
 
 int network_is_connected() {

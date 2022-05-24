@@ -23,8 +23,7 @@ function addHoursToDate(date, hours) {
     return date;
 }
 
-function formatDate(time) {
-    const date = new Date(time);
+function formatDate(date) {
     return date.toLocaleString('en-GB', { timeZone: 'CET' });
 }
 
